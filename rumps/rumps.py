@@ -180,6 +180,10 @@ def quit_application(sender=None):
 
 def _nsimage_from_file(filename, dimensions=None, template=None):
     """Take a path to an image file and return an NSImage object."""
+    # First check to make sure an NSImage wasn't already loaded.
+    if type(filename) == NSImage:
+        return filename
+
     try:
         _log('attempting to open image at {0}'.format(filename))
         with open(filename):
@@ -196,7 +200,9 @@ def _nsimage_from_file(filename, dimensions=None, template=None):
             pass              # otherwise silently errors in NSImage which isn't helpful for debugging
     image = NSImage.alloc().initByReferencingFile_(filename)
     image.setScalesWhenResized_(True)
-    image.setSize_((20, 20) if dimensions is None else dimensions)
+    if dimensions is None:
+        dimensions = (image.size().width, image.size().height)
+    image.setSize_(dimensions)
     if not template is None:
         image.setTemplate_(template)
     return image
